@@ -138,12 +138,16 @@ Write-Progress -Activity "Following SharePoint Sites" -Completed
 # Calculate execution time
 $scriptEndTime = Get-Date
 $executionTime = $scriptEndTime - $scriptStartTime
-$formattedExecutionTime = "{0:mm}m {0:ss}s" -f $executionTime
+$formattedExecutionTime = $executionTime.ToString("mm' min 'ss' sec'")
 
 # Display summary
 Write-Log "Operation complete!" "COMPLETE" "Cyan"
 Write-Log "Execution time: $formattedExecutionTime" "STATS" "White"
-Write-Log "Success count: $successCount" "STATS" $(if ($successCount -gt 0) { "Green" } else { "Yellow" })
-Write-Log "Failure count: $failureCount" "STATS" $(if ($failureCount -gt 0) { "Red" } else { "Green" })
-Write-Log "Total operations: $($successCount + $failureCount)" "STATS" "White"
-Write-Log "Success rate: $(if (($successCount + $failureCount) -gt 0) { [math]::Round(($successCount / ($successCount + $failureCount)) * 100, 2) } else { 0 })%" "STATS" "Cyan"
+$successColor = if ($successCount -gt 0) { "Green" } else { "Yellow" }
+Write-Log "Success count: $successCount" "STATS" $successColor
+$failureColor = if ($failureCount -gt 0) { "Red" } else { "Green" }
+Write-Log "Failure count: $failureCount" "STATS" $failureColor
+$totalOps = $successCount + $failureCount
+Write-Log "Total operations: $totalOps" "STATS" "White"
+$successRate = if ($totalOps -gt 0) { [math]::Round(($successCount / $totalOps) * 100, 2) } else { 0 }
+Write-Log "Success rate: $successRate%" "STATS" "Cyan"
