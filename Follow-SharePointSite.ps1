@@ -24,10 +24,10 @@ An array of SharePoint site IDs that users should follow
 An array of Azure AD user IDs who should follow the SharePoint sites
 
 .EXAMPLE
-.\Follow-SharePointSite.ps1 -TenantID "contoso.onmicrosoft.com" -ApplicationId "1234abcd-1234-abcd-1234-1234abcd1234" -ApplicationSecret "YourAppSecret" -SiteIds @("sites/contoso.sharepoint.com:/sites/Marketing") -UserIds @("user1@contoso.com", "user2@contoso.com")
+.\Follow-SharePointSite.ps1 -TenantID "contoso.onmicrosoft.com" -ApplicationId "1234abcd-1234-abcd-1234-1234abcd1234" -ApplicationSecret "YourAppSecret" -SiteIds @("sites/contoso.sharepoint.com/sites/Marketing") -UserIds @("user1@contoso.com", "user2@contoso.com")
 
 .EXAMPLE
-.\Follow-SharePointSite.ps1 -TenantID "contoso.onmicrosoft.com" -ApplicationId "1234abcd-1234-abcd-1234-1234abcd1234" -ApplicationSecret "YourAppSecret" -SiteIds @("sites/contoso.sharepoint.com:/sites/Marketing", "sites/contoso.sharepoint.com:/sites/HR") -GroupId "5678efgh-5678-efgh-5678-5678efgh5678"
+.\Follow-SharePointSite.ps1 -TenantID "contoso.onmicrosoft.com" -ApplicationId "1234abcd-1234-abcd-1234-1234abcd1234" -ApplicationSecret "YourAppSecret" -SiteIds @("sites/contoso.sharepoint.com/sites/Marketing", "sites/contoso.sharepoint.com/sites/HR") -GroupId "5678efgh-5678-efgh-5678-5678efgh5678"
 #>
 
 [CmdletBinding()]
@@ -72,7 +72,8 @@ function Get-AuthToken {
         return $TokenResponse.access_token
     }
     catch {
-        Write-Error "Failed to obtain authentication token: $_"
+        $errorMessage = $_.Exception.Message
+        Write-Error "Failed to obtain authentication token: $errorMessage"
         exit 1
     }
 }
@@ -104,7 +105,8 @@ function Add-SiteToUserFollowed {
         return $true
     }
     catch {
-        Write-Host "Failed to add site $SiteId to followed sites for user $UserId: $_" -ForegroundColor Red
+        $errorMessage = $_.Exception.Message
+        Write-Host "Failed to add site $SiteId to followed sites for user $UserId: $errorMessage" -ForegroundColor Red
         return $false
     }
 }
@@ -143,7 +145,8 @@ if ($GroupId) {
         }
     }
     catch {
-        Write-Host "Error fetching users from group: $_" -ForegroundColor Red
+        $errorMessage = $_.Exception.Message
+        Write-Host "Error fetching users from group: $errorMessage" -ForegroundColor Red
     }
 }
 
