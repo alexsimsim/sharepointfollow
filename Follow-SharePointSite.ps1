@@ -177,5 +177,6 @@ foreach ($userId in $allUserIds) {
 # Summary
 Write-Host "`nProcess completed!" -ForegroundColor Cyan
 Write-Host "Successful operations: $successCount" -ForegroundColor Green
-Write-Host "Failed operations: $failureCount" -ForegroundColor $(if ($failureCount -gt 0) { "Red" } else { "Green" })
+$failureColor = if ($failureCount -gt 0) { "Red" } else { "Green" }
+Write-Host "Failed operations: $failureCount" -ForegroundColor $failureColor
 
