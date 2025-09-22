@@ -14,6 +14,9 @@ The Application (client) ID of your registered Azure AD application
 .PARAMETER ApplicationSecret
 The client secret of your registered Azure AD application
 
+.PARAMETER UserId
+(Optional) A single Azure AD user ID or UPN who should follow the SharePoint sites
+
 .PARAMETER GroupId
 (Optional) The ID of an Azure AD group whose members should follow the SharePoint sites
 
@@ -24,22 +27,29 @@ An array of SharePoint site IDs that users should follow
 An array of Azure AD user IDs who should follow the SharePoint sites
 
 .EXAMPLE
-.\Follow-SharePointSite.ps1 -TenantID "contoso.onmicrosoft.com" -ApplicationId "1234abcd-1234-abcd-1234-1234abcd1234" -ApplicationSecret "YourAppSecret" -SiteIds @("sites/contoso.sharepoint.com/sites/Marketing") -UserIds @("user1@contoso.com", "user2@contoso.com")
+.\Follow-SharePointSite.ps1 -SiteIds @("sites/contoso.sharepoint.com/sites/Marketing") -UserIds @("user1@contoso.com", "user2@contoso.com")
+
+.EXAMPLE
+.\Follow-SharePointSite.ps1 -SiteIds @("sites/contoso.sharepoint.com/sites/Marketing") -UserId "user1@contoso.com"
 
 .EXAMPLE
 .\Follow-SharePointSite.ps1 -TenantID "contoso.onmicrosoft.com" -ApplicationId "1234abcd-1234-abcd-1234-1234abcd1234" -ApplicationSecret "YourAppSecret" -SiteIds @("sites/contoso.sharepoint.com/sites/Marketing", "sites/contoso.sharepoint.com/sites/HR") -GroupId "5678efgh-5678-efgh-5678-5678efgh5678"
 #>
 
+[string]$DEFAULT_TENANT_ID = "contoso.onmicrosoft.com"
+[string]$DEFAULT_APPLICATION_ID = "00000000-0000-0000-0000-000000000000"
+[string]$DEFAULT_APPLICATION_SECRET = "REPLACE_WITH_APP_SECRET"
+
 [CmdletBinding()]
 param (
-    [Parameter(Mandatory = $true)]
-    [string]$TenantID,
+    [Parameter(Mandatory = $false)]
+    [string]$TenantID = $DEFAULT_TENANT_ID,
     
-    [Parameter(Mandatory = $true)]
-    [string]$ApplicationId,
+    [Parameter(Mandatory = $false)]
+    [string]$ApplicationId = $DEFAULT_APPLICATION_ID,
     
-    [Parameter(Mandatory = $true)]
-    [string]$ApplicationSecret,
+    [Parameter(Mandatory = $false)]
+    [string]$ApplicationSecret = $DEFAULT_APPLICATION_SECRET,
     
     [Parameter(Mandatory = $false)]
     [string]$GroupId,
@@ -48,12 +58,15 @@ param (
     [array]$SiteIds,
     
     [Parameter(Mandatory = $false)]
-    [array]$UserIds
+    [array]$UserIds,
+
+    [Parameter(Mandatory = $false)]
+    [string]$UserId
 )
 
-# Check if at least one of GroupId or UserIds is provided
-if (-not $GroupId -and -not $UserIds) {
-    Write-Error "Either GroupId or UserIds must be specified."
+# Check if at least one of GroupId, UserIds, or UserId is provided
+if (-not $GroupId -and -not $UserIds -and -not $UserId) {
+    Write-Error "Either GroupId, UserIds, or UserId must be specified."
     exit 1
 }
 
@@ -127,6 +140,11 @@ $allUserIds = @()
 # If UserIds is provided, add them to the array
 if ($UserIds) {
     $allUserIds += $UserIds
+}
+
+# If single UserId is provided, add it to the array
+if ($UserId) {
+    $allUserIds += $UserId
 }
 
 # If GroupId is provided, get users from the group
