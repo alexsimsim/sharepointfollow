@@ -36,6 +36,21 @@ An array of Azure AD user IDs who should follow the SharePoint sites
 .\Follow-SharePointSite.ps1 -TenantID "contoso.onmicrosoft.com" -ApplicationId "1234abcd-1234-abcd-1234-1234abcd1234" -ApplicationSecret "YourAppSecret" -SiteIds @("sites/contoso.sharepoint.com/sites/Marketing", "sites/contoso.sharepoint.com/sites/HR") -GroupId "5678efgh-5678-efgh-5678-5678efgh5678"
 #>
 
+# Default values
+[string]$DEFAULT_TENANT_ID = "contoso.onmicrosoft.com"
+[string]$DEFAULT_APPLICATION_ID = "00000000-0000-0000-0000-000000000000"
+[string]$DEFAULT_APPLICATION_SECRET = "REPLACE_WITH_APP_SECRET"
+
+# Defaults for users and sites
+[string[]]$DEFAULT_SITE_IDS = @(
+    "sites/contoso.sharepoint.com/sites/Marketing"
+)
+[string[]]$DEFAULT_USER_IDS = @(
+    "user1@contoso.com",
+    "user2@contoso.com"
+)
+[string]$DEFAULT_USER_ID = "user1@contoso.com"
+
 [CmdletBinding()]
 param (
     [Parameter(Mandatory = $false)]
@@ -59,21 +74,6 @@ param (
     [Parameter(Mandatory = $false)]
     [string]$UserId = $DEFAULT_USER_ID
 )
-
-# Default values
-[string]$DEFAULT_TENANT_ID = "contoso.onmicrosoft.com"
-[string]$DEFAULT_APPLICATION_ID = "00000000-0000-0000-0000-000000000000"
-[string]$DEFAULT_APPLICATION_SECRET = "REPLACE_WITH_APP_SECRET"
-
-# Defaults for users and sites
-[string[]]$DEFAULT_SITE_IDS = @(
-    "sites/contoso.sharepoint.com/sites/Marketing"
-)
-[string[]]$DEFAULT_USER_IDS = @(
-    "user1@contoso.com",
-    "user2@contoso.com"
-)
-[string]$DEFAULT_USER_ID = "user1@contoso.com"
 
 # Check if at least one of GroupId, UserIds, or UserId is provided
 if (-not $GroupId -and -not $UserIds -and -not $UserId) {
