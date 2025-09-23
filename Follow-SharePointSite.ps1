@@ -36,6 +36,29 @@ An array of Azure AD user IDs who should follow the SharePoint sites
 .\Follow-SharePointSite.ps1 -TenantID "contoso.onmicrosoft.com" -ApplicationId "1234abcd-1234-abcd-1234-1234abcd1234" -ApplicationSecret "YourAppSecret" -SiteIds @("sites/contoso.sharepoint.com/sites/Marketing", "sites/contoso.sharepoint.com/sites/HR") -GroupId "5678efgh-5678-efgh-5678-5678efgh5678"
 #>
 
+param(
+    [Parameter(Mandatory=$false)]
+    [string]$TenantID,
+    
+    [Parameter(Mandatory=$false)]
+    [string]$ApplicationId,
+    
+    [Parameter(Mandatory=$false)]
+    [string]$ApplicationSecret,
+    
+    [Parameter(Mandatory=$false)]
+    [string]$UserId,
+    
+    [Parameter(Mandatory=$false)]
+    [string]$GroupId,
+    
+    [Parameter(Mandatory=$false)]
+    [string[]]$SiteIds,
+    
+    [Parameter(Mandatory=$false)]
+    [string[]]$UserIds
+)
+
 # Set default values if not provided
 if (-not $TenantID) { $TenantID = "contoso.onmicrosoft.com" }
 if (-not $ApplicationId) { $ApplicationId = "00000000-0000-0000-0000-000000000000" }

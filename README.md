@@ -6,7 +6,8 @@ These PowerShell scripts help you make Azure AD users follow specific SharePoint
 
 1. **Follow-SharePointSite.ps1** - Full-featured script with comprehensive error handling and detailed output
 2. **Follow-SharePointSite-Simple.ps1** - Simplified version for quick usage
-3. **Example-Usage.ps1** - Example commands showing how to use the main script
+3. **Get-UserFollowedSites.ps1** - Retrieves and displays SharePoint sites that a specific user is following
+4. **Example-Usage.ps1** - Example commands showing how to use the main script
 
 ## Prerequisites
 
@@ -29,6 +30,8 @@ These PowerShell scripts help you make Azure AD users follow specific SharePoint
 
 ### Basic Usage
 
+#### Making Users Follow Sites
+
 ```powershell
 .\Follow-SharePointSite.ps1 `
     -TenantID "yourtenant.onmicrosoft.com" `
@@ -36,6 +39,29 @@ These PowerShell scripts help you make Azure AD users follow specific SharePoint
     -ApplicationSecret "your-application-secret" `
     -SiteIds @("sites/yourtenant.sharepoint.com:/sites/YourSiteName") `
     -UserIds @("user1@yourtenant.com", "user2@yourtenant.com")
+```
+
+#### Getting Sites a User is Following
+
+```powershell
+# Basic usage with default table output
+.\Get-UserFollowedSites.ps1 -UserId "user@yourtenant.com"
+
+# With full configuration and CSV export
+.\Get-UserFollowedSites.ps1 `
+    -TenantID "yourtenant.onmicrosoft.com" `
+    -ApplicationId "your-application-id" `
+    -ApplicationSecret "your-application-secret" `
+    -UserId "user@yourtenant.com" `
+    -OutputFormat "CSV" `
+    -OutputFile "user-followed-sites.csv" `
+    -IncludeDetails
+
+# JSON output with detailed information
+.\Get-UserFollowedSites.ps1 `
+    -UserId "user@yourtenant.com" `
+    -OutputFormat "JSON" `
+    -IncludeDetails
 ```
 
 ### Getting SharePoint Site IDs
@@ -57,14 +83,18 @@ Invoke-RestMethod -Uri "https://graph.microsoft.com/v1.0/sites?search=$encodedUr
 
 ## Feature Comparison
 
-| Feature | Follow-SharePointSite.ps1 | Follow-SharePointSite-Simple.ps1 |
-|---------|---------------------------|--------------------------------|
-| Detailed logging | ✅ | ❌ |
-| Error handling | ✅ | ✅ (basic) |
-| Parameter validation | ✅ | ❌ |
-| Summary statistics | ✅ | ❌ |
-| Configuration via parameters | ✅ | ❌ |
-| Configuration via script variables | ❌ | ✅ |
+| Feature | Follow-SharePointSite.ps1 | Follow-SharePointSite-Simple.ps1 | Get-UserFollowedSites.ps1 |
+|---------|---------------------------|--------------------------------|---------------------------|
+| Detailed logging | ✅ | ❌ | ✅ |
+| Error handling | ✅ | ✅ (basic) | ✅ |
+| Parameter validation | ✅ | ❌ | ✅ |
+| Summary statistics | ✅ | ❌ | ✅ |
+| Configuration via parameters | ✅ | ❌ | ✅ |
+| Configuration via script variables | ❌ | ✅ | ❌ |
+| Multiple output formats | ❌ | ❌ | ✅ (Table, List, CSV, JSON) |
+| Export to file | ❌ | ❌ | ✅ |
+| Detailed site information | ❌ | ❌ | ✅ (optional) |
+| User validation | ❌ | ❌ | ✅ |
 
 ## Credit
 
