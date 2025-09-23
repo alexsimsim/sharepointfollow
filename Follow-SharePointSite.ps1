@@ -222,7 +222,7 @@ function Add-SiteToUserFollowed {
         try {
             Write-LogMessage "Attempt $attempt of $MaxRetries`: Adding site $SiteId to followed sites for user $UserId" "INFO" "Cyan"
             
-            $response = Invoke-RestMethod -Uri "https://graph.microsoft.com/v1.0/users/$UserId/followedSites/add" -Headers $headers -Method Post -Body $body -ContentType "application/json" -ErrorAction Stop
+            Invoke-RestMethod -Uri "https://graph.microsoft.com/v1.0/users/$UserId/followedSites/add" -Headers $headers -Method Post -Body $body -ContentType "application/json" -ErrorAction Stop | Out-Null
             
             Write-LogMessage "API call successful - waiting $RetryDelaySeconds seconds before verification..." "INFO" "Yellow"
             Start-Sleep -Seconds $RetryDelaySeconds
