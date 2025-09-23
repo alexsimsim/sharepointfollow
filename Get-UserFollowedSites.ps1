@@ -67,6 +67,9 @@ if (-not $TenantID) { $TenantID = "contoso.onmicrosoft.com" }
 if (-not $ApplicationId) { $ApplicationId = "00000000-0000-0000-0000-000000000000" }
 if (-not $ApplicationSecret) { $ApplicationSecret = "REPLACE_WITH_APP_SECRET" }
 
+# Load required assemblies
+Add-Type -AssemblyName System.Web
+
 # Validate required parameters
 if (-not $UserId) {
     Write-Error "UserId parameter is required."
@@ -160,9 +163,19 @@ function Get-UserFollowedSites {
         
         $sites = $response.value
         Write-LogMessage "Found $($sites.Count) followed sites" "SUCCESS" "Green"
+        
+        # Debug: Show site information structure
+        if ($sites.Count -gt 0) {
+            Write-LogMessage "Sample site structure for debugging:" "DEBUG" "Gray"
+            $sampleSite = $sites[0]
+            Write-LogMessage "  - ID: $($sampleSite.id)" "DEBUG" "Gray"
+            Write-LogMessage "  - Display Name: $($sampleSite.displayName)" "DEBUG" "Gray"
+            Write-LogMessage "  - Web URL: $($sampleSite.webUrl)" "DEBUG" "Gray"
+        }
 
         if ($IncludeDetails -and $sites.Count -gt 0) {
             Write-LogMessage "Fetching detailed information for each site..." "INFO" "Cyan"
+            Write-LogMessage "Note: Some detailed information may not be available due to API limitations" "INFO" "Yellow"
             
             # Enhance each site with additional details
             for ($i = 0; $i -lt $sites.Count; $i++) {
@@ -170,17 +183,51 @@ function Get-UserFollowedSites {
                 try {
                     Write-Progress -Activity "Fetching site details" -Status "Processing site $($i + 1) of $($sites.Count): $($site.displayName)" -PercentComplete (($i + 1) / $sites.Count * 100)
                     
-                    $detailedSite = Invoke-RestMethod -Uri "https://graph.microsoft.com/v1.0/sites/$($site.id)" -Headers $headers -Method Get -ErrorAction Stop
+                    # Try multiple approaches to get site details
+                    $detailedSite = $null
                     
-                    # Add additional properties
-                    $site | Add-Member -NotePropertyName "Description" -NotePropertyValue $detailedSite.description -Force
-                    $site | Add-Member -NotePropertyName "LastModifiedDateTime" -NotePropertyValue $detailedSite.lastModifiedDateTime -Force
-                    $site | Add-Member -NotePropertyName "SiteCollection" -NotePropertyValue $detailedSite.siteCollection -Force
+                    # First try with the direct site ID
+                    try {
+                        $detailedSite = Invoke-RestMethod -Uri "https://graph.microsoft.com/v1.0/sites/$($site.id)" -Headers $headers -Method Get -ErrorAction Stop
+                    }
+                    catch {
+                        # If that fails, try with the webUrl
+                        if ($site.webUrl) {
+                            try {
+                                $encodedUrl = [System.Web.HttpUtility]::UrlEncode($site.webUrl)
+                                $searchResponse = Invoke-RestMethod -Uri "https://graph.microsoft.com/v1.0/sites?search=$encodedUrl" -Headers $headers -Method Get -ErrorAction Stop
+                                if ($searchResponse.value -and $searchResponse.value.Count -gt 0) {
+                                    $detailedSite = $searchResponse.value[0]
+                                }
+                            }
+                            catch {
+                                Write-LogMessage "Could not fetch detailed info for site $($site.displayName) using webUrl approach" "DEBUG" "Gray"
+                            }
+                        }
+                    }
                     
-                    Start-Sleep -Milliseconds 200  # Rate limiting
+                    if ($detailedSite) {
+                        # Add additional properties
+                        $site | Add-Member -NotePropertyName "Description" -NotePropertyValue $detailedSite.description -Force
+                        $site | Add-Member -NotePropertyName "LastModifiedDateTime" -NotePropertyValue $detailedSite.lastModifiedDateTime -Force
+                        $site | Add-Member -NotePropertyName "SiteCollection" -NotePropertyValue $detailedSite.siteCollection -Force
+                        Write-LogMessage "Enhanced details for site: $($site.displayName)" "DEBUG" "Gray"
+                    } else {
+                        # Add placeholder values if we couldn't get details
+                        $site | Add-Member -NotePropertyName "Description" -NotePropertyValue "Not available" -Force
+                        $site | Add-Member -NotePropertyName "LastModifiedDateTime" -NotePropertyValue $null -Force
+                        $site | Add-Member -NotePropertyName "SiteCollection" -NotePropertyValue $null -Force
+                        Write-LogMessage "Could not fetch enhanced details for site: $($site.displayName)" "DEBUG" "Gray"
+                    }
+                    
+                    Start-Sleep -Milliseconds 300  # Increased rate limiting
                 }
                 catch {
                     Write-LogMessage "Failed to get detailed info for site $($site.displayName): $($_.Exception.Message)" "WARNING" "Yellow"
+                    # Add placeholder values on error
+                    $site | Add-Member -NotePropertyName "Description" -NotePropertyValue "Error retrieving" -Force
+                    $site | Add-Member -NotePropertyName "LastModifiedDateTime" -NotePropertyValue $null -Force
+                    $site | Add-Member -NotePropertyName "SiteCollection" -NotePropertyValue $null -Force
                 }
             }
             Write-Progress -Activity "Fetching site details" -Completed
