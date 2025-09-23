@@ -36,15 +36,13 @@ An array of Azure AD user IDs who should follow the SharePoint sites
 .\Follow-SharePointSite.ps1 -TenantID "contoso.onmicrosoft.com" -ApplicationId "1234abcd-1234-abcd-1234-1234abcd1234" -ApplicationSecret "YourAppSecret" -SiteIds @("sites/contoso.sharepoint.com/sites/Marketing", "sites/contoso.sharepoint.com/sites/HR") -GroupId "5678efgh-5678-efgh-5678-5678efgh5678"
 #>
 
-param (
-    [string]$TenantID = "contoso.onmicrosoft.com",
-    [string]$ApplicationId = "00000000-0000-0000-0000-000000000000",
-    [string]$ApplicationSecret = "REPLACE_WITH_APP_SECRET",
-    [string]$GroupId = "",
-    [array]$SiteIds = @("sites/contoso.sharepoint.com/sites/Marketing"),
-    [array]$UserIds = @("user1@contoso.com", "user2@contoso.com"),
-    [string]$UserId = "user1@contoso.com"
-)
+# Set default values if not provided
+if (-not $TenantID) { $TenantID = "contoso.onmicrosoft.com" }
+if (-not $ApplicationId) { $ApplicationId = "00000000-0000-0000-0000-000000000000" }
+if (-not $ApplicationSecret) { $ApplicationSecret = "REPLACE_WITH_APP_SECRET" }
+if (-not $SiteIds) { $SiteIds = @("sites/contoso.sharepoint.com/sites/Marketing") }
+if (-not $UserIds) { $UserIds = @("user1@contoso.com", "user2@contoso.com") }
+if (-not $UserId) { $UserId = "user1@contoso.com" }
 
 # Check if at least one of GroupId, UserIds, or UserId is provided
 if (-not $GroupId -and -not $UserIds -and -not $UserId) {
@@ -67,7 +65,7 @@ function Get-AuthToken {
         return $TokenResponse.access_token
     }
     catch {
-        Write-Error "Failed to obtain authentication token: $_"
+        Write-Error "Failed to obtain authentication token: $($_.Exception.Message)"
         exit 1
     }
 }
@@ -99,7 +97,7 @@ function Add-SiteToUserFollowed {
         return $true
     }
     catch {
-        Write-Host "Failed to add site $SiteId to followed sites for user $UserId: $_" -ForegroundColor Red
+        Write-Host "Failed to add site $SiteId to followed sites for user $UserId" -ForegroundColor Red
         return $false
     }
 }
@@ -143,7 +141,7 @@ if ($GroupId) {
         }
     }
     catch {
-        Write-Host "Error fetching users from group: $_" -ForegroundColor Red
+        Write-Host "Error fetching users from group" -ForegroundColor Red
     }
 }
 
@@ -179,4 +177,3 @@ Write-Host "`nProcess completed!" -ForegroundColor Cyan
 Write-Host "Successful operations: $successCount" -ForegroundColor Green
 $failureColor = if ($failureCount -gt 0) { "Red" } else { "Green" }
 Write-Host "Failed operations: $failureCount" -ForegroundColor $failureColor
-
