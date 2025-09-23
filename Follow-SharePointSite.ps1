@@ -40,6 +40,16 @@ An array of Azure AD user IDs who should follow the SharePoint sites
 [string]$DEFAULT_APPLICATION_ID = "00000000-0000-0000-0000-000000000000"
 [string]$DEFAULT_APPLICATION_SECRET = "REPLACE_WITH_APP_SECRET"
 
+# Defaults for users and sites
+[string[]]$DEFAULT_SITE_IDS = @(
+    "sites/contoso.sharepoint.com/sites/Marketing"
+)
+[string[]]$DEFAULT_USER_IDS = @(
+    "user1@contoso.com",
+    "user2@contoso.com"
+)
+[string]$DEFAULT_USER_ID = "user1@contoso.com"
+
 [CmdletBinding()]
 param (
     [Parameter(Mandatory = $false)]
@@ -54,14 +64,14 @@ param (
     [Parameter(Mandatory = $false)]
     [string]$GroupId,
     
-    [Parameter(Mandatory = $true)]
-    [array]$SiteIds,
+    [Parameter(Mandatory = $false)]
+    [array]$SiteIds = $DEFAULT_SITE_IDS,
     
     [Parameter(Mandatory = $false)]
-    [array]$UserIds,
+    [array]$UserIds = $DEFAULT_USER_IDS,
 
     [Parameter(Mandatory = $false)]
-    [string]$UserId
+    [string]$UserId = $DEFAULT_USER_ID
 )
 
 # Check if at least one of GroupId, UserIds, or UserId is provided
