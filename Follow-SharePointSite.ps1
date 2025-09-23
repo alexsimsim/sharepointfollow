@@ -36,43 +36,14 @@ An array of Azure AD user IDs who should follow the SharePoint sites
 .\Follow-SharePointSite.ps1 -TenantID "contoso.onmicrosoft.com" -ApplicationId "1234abcd-1234-abcd-1234-1234abcd1234" -ApplicationSecret "YourAppSecret" -SiteIds @("sites/contoso.sharepoint.com/sites/Marketing", "sites/contoso.sharepoint.com/sites/HR") -GroupId "5678efgh-5678-efgh-5678-5678efgh5678"
 #>
 
-# Default values
-[string]$DEFAULT_TENANT_ID = "contoso.onmicrosoft.com"
-[string]$DEFAULT_APPLICATION_ID = "00000000-0000-0000-0000-000000000000"
-[string]$DEFAULT_APPLICATION_SECRET = "REPLACE_WITH_APP_SECRET"
-
-# Defaults for users and sites
-[string[]]$DEFAULT_SITE_IDS = @(
-    "sites/contoso.sharepoint.com/sites/Marketing"
-)
-[string[]]$DEFAULT_USER_IDS = @(
-    "user1@contoso.com",
-    "user2@contoso.com"
-)
-[string]$DEFAULT_USER_ID = "user1@contoso.com"
-
-[CmdletBinding()]
 param (
-    [Parameter(Mandatory = $false)]
-    [string]$TenantID = $DEFAULT_TENANT_ID,
-    
-    [Parameter(Mandatory = $false)]
-    [string]$ApplicationId = $DEFAULT_APPLICATION_ID,
-    
-    [Parameter(Mandatory = $false)]
-    [string]$ApplicationSecret = $DEFAULT_APPLICATION_SECRET,
-    
-    [Parameter(Mandatory = $false)]
-    [string]$GroupId,
-    
-    [Parameter(Mandatory = $false)]
-    [array]$SiteIds = $DEFAULT_SITE_IDS,
-    
-    [Parameter(Mandatory = $false)]
-    [array]$UserIds = $DEFAULT_USER_IDS,
-
-    [Parameter(Mandatory = $false)]
-    [string]$UserId = $DEFAULT_USER_ID
+    [string]$TenantID = "contoso.onmicrosoft.com",
+    [string]$ApplicationId = "00000000-0000-0000-0000-000000000000",
+    [string]$ApplicationSecret = "REPLACE_WITH_APP_SECRET",
+    [string]$GroupId = "",
+    [array]$SiteIds = @("sites/contoso.sharepoint.com/sites/Marketing"),
+    [array]$UserIds = @("user1@contoso.com", "user2@contoso.com"),
+    [string]$UserId = "user1@contoso.com"
 )
 
 # Check if at least one of GroupId, UserIds, or UserId is provided
@@ -96,8 +67,7 @@ function Get-AuthToken {
         return $TokenResponse.access_token
     }
     catch {
-        $errorMessage = $_.Exception.Message
-        Write-Error "Failed to obtain authentication token: $errorMessage"
+        Write-Error "Failed to obtain authentication token: $_"
         exit 1
     }
 }
@@ -129,8 +99,7 @@ function Add-SiteToUserFollowed {
         return $true
     }
     catch {
-        $errorMessage = $_.Exception.Message
-        Write-Host "Failed to add site $SiteId to followed sites for user $UserId: $errorMessage" -ForegroundColor Red
+        Write-Host "Failed to add site $SiteId to followed sites for user $UserId: $_" -ForegroundColor Red
         return $false
     }
 }
@@ -174,8 +143,7 @@ if ($GroupId) {
         }
     }
     catch {
-        $errorMessage = $_.Exception.Message
-        Write-Host "Error fetching users from group: $errorMessage" -ForegroundColor Red
+        Write-Host "Error fetching users from group: $_" -ForegroundColor Red
     }
 }
 
