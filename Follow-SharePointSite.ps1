@@ -76,26 +76,38 @@ if (-not $GroupId -and -not $UserIds -and -not $UserId) {
 # Function to get authentication token
 function Get-AuthToken {
     $body = @{
-        'resource'      = 'https://graph.microsoft.com'
         'client_id'     = $ApplicationId
         'client_secret' = $ApplicationSecret
+        'scope'         = 'https://graph.microsoft.com/.default'
         'grant_type'    = "client_credentials"
-        'scope'         = "openid"
     }
 
     try {
         Write-LogMessage "Requesting authentication token from Microsoft Graph..." "DEBUG" "Gray"
-        $TokenResponse = Invoke-RestMethod -Method Post -Uri "https://login.microsoftonline.com/$TenantID/oauth2/token" -Body $body -ErrorAction Stop
+        $TokenResponse = Invoke-RestMethod -Method Post -Uri "https://login.microsoftonline.com/$TenantID/oauth2/v2.0/token" -Body $body -ErrorAction Stop
         Write-LogMessage "Authentication token received successfully" "DEBUG" "Gray"
         return $TokenResponse.access_token
     }
     catch {
         $statusCode = ""
+        $errorDetails = ""
         if ($_.Exception.Response) {
             $statusCode = " (HTTP $($_.Exception.Response.StatusCode.value__))"
+            try {
+                $reader = New-Object System.IO.StreamReader($_.Exception.Response.GetResponseStream())
+                $errorDetails = $reader.ReadToEnd()
+                $reader.Close()
+                if ($errorDetails) {
+                    $errorDetails = " | Response: $errorDetails"
+                }
+            }
+            catch {
+                # If we can't read the response stream, continue without it
+            }
         }
-        Write-LogMessage "Failed to obtain authentication token$statusCode`: $($_.Exception.Message)" "ERROR" "Red"
+        Write-LogMessage "Failed to obtain authentication token$statusCode`: $($_.Exception.Message)$errorDetails" "ERROR" "Red"
         Write-LogMessage "Check your TenantID, ApplicationId, and ApplicationSecret values" "INFO" "Yellow"
+        Write-LogMessage "Ensure your app has the following Microsoft Graph permissions: Sites.Read.All, Sites.ReadWrite.All" "INFO" "Yellow"
         exit 1
     }
 }

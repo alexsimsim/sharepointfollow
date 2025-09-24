@@ -81,6 +81,45 @@ $encodedUrl = [System.Web.HttpUtility]::UrlEncode($siteUrl)
 Invoke-RestMethod -Uri "https://graph.microsoft.com/v1.0/sites?search=$encodedUrl" -Headers $headers -Method Get
 ```
 
+## Troubleshooting
+
+### Common Errors and Solutions
+
+#### HTTP 500 Internal Server Error
+
+If you encounter a 500 error when retrieving followed sites, this typically indicates:
+
+1. **Missing API Permissions**: Ensure your Azure AD app has the correct permissions:
+   - `Sites.Read.All` (minimum for reading followed sites)
+   - `Sites.ReadWrite.All` (recommended for full functionality)
+
+2. **User Access Issues**: The user may not have access to the followed sites feature or may not be following any sites yet.
+
+3. **Tenant Configuration**: Some tenants have restrictions on the followed sites feature.
+
+**Solution**: The scripts now automatically test API connectivity and provide detailed error messages to help diagnose the issue.
+
+#### HTTP 403 Forbidden
+
+This indicates insufficient permissions. Check that:
+- Your Azure AD app has the required API permissions
+- Admin consent has been granted for the permissions
+- The client secret is valid and not expired
+
+#### Authentication Issues
+
+If you encounter authentication errors:
+- Verify your Tenant ID, Application ID, and Application Secret are correct
+- Ensure you're using the v2.0 authentication endpoint (automatically handled by the updated scripts)
+- Check that your Azure AD app is properly configured
+
+### Updated Authentication
+
+The scripts have been updated to use the modern Microsoft Graph authentication approach:
+- Uses OAuth 2.0 v2.0 endpoint
+- Proper scope handling (`https://graph.microsoft.com/.default`)
+- Enhanced error reporting with detailed response information
+
 ## Feature Comparison
 
 | Feature | Follow-SharePointSite.ps1 | Follow-SharePointSite-Simple.ps1 | Get-UserFollowedSites.ps1 |
@@ -95,6 +134,8 @@ Invoke-RestMethod -Uri "https://graph.microsoft.com/v1.0/sites?search=$encodedUr
 | Export to file | ❌ | ❌ | ✅ |
 | Detailed site information | ❌ | ❌ | ✅ (optional) |
 | User validation | ❌ | ❌ | ✅ |
+| API connectivity testing | ✅ | ❌ | ✅ |
+| Enhanced error diagnostics | ✅ | ❌ | ✅ |
 
 ## Credit
 
